@@ -1,5 +1,6 @@
 import assist.ListNode;
 import assist.TreeNode;
+import assist.UnionFind;
 import cn.hutool.core.lang.tree.Tree;
 import cn.hutool.core.util.NumberUtil;
 import utils.Util;
@@ -1445,7 +1446,7 @@ public class Solution {
 
     }
 
-    //  155. 最小栈
+    //155. 最小栈
     class MinStack {
         Stack<Integer> dataStack;
         Stack<Integer> minStack;
@@ -1459,8 +1460,7 @@ public class Solution {
             dataStack.push(val);
             if (minStack.isEmpty()) {
                 minStack.push(val);
-            } else
-                minStack.push(Math.min(minStack.peek(), val));
+            } else minStack.push(Math.min(minStack.peek(), val));
         }
 
         public void pop() {
@@ -1476,12 +1476,188 @@ public class Solution {
             return minStack.peek();
         }
     }
+
+    // 160. 相交链表
+    public ListNode getIntersectionNode(ListNode headA, ListNode headB) {
+        if (headA == null || headB == null) return null;
+        ListNode pA = headA, pB = headB;
+        while (pA != pB) {
+            pA = pA == null ? headB : pA.next;
+            pB = pB == null ? headA : pB.next;
+        }
+        return pA;
+
+    }
+
+    // 169. 多数元素
+    // 思想: 众数到最后一定比其它数多,每次遍历记录某一个数X的出现次数,遇到不相同的就-1,直到0,更换其它众数Y
+    public int majorityElement(int[] nums) {
+        int ans = nums[0];
+        int count = 1;
+        for (int num : nums) {
+            if (num == ans) {
+                count++;
+            } else if (count == 0) {
+                ans = num;
+                count = 1;
+            } else count--;
+        }
+        return ans;
+    }
+
+    // 198. 打家劫舍  空间复杂度O(n),时间复杂度O(n)
+    public int rob(int[] nums) {
+        int len = nums.length;
+        //[0,i)中最大的金额
+        int[] dp = new int[len + 1];
+        dp[0] = 0;
+        dp[1] = nums[0];
+
+        for (int i = 1; i < len; i++) {
+            dp[i + 1] = Math.max(dp[i - 1] + nums[i], dp[i]);
+        }
+
+
+        return dp[len];
+    }
+
+    // 198. 打家劫舍 法二 空间复杂度O(1),时间复杂度O(n)
+    public int rob2(int[] nums) {
+        int pre_2 = 0;
+        int pre_1 = 0;
+        for (int num : nums) {
+            int temp = Math.max(num + pre_2, pre_1);
+            pre_2 = pre_1;
+            pre_1 = temp;
+
+        }
+        return pre_1;
+    }
+
+    // 200. 岛屿数量 DFS 时间复杂度：O(MN)，空间复杂度：O(MN)
+    public int numIslands(char[][] grid) {
+        if (grid == null || grid.length == 0) return 0;
+        int rowLen = grid.length;
+        int cowLen = grid[0].length;
+        int ans = 0;
+        for (int i = 0; i < rowLen; ++i) {
+            for (int j = 0; j < cowLen; ++j) {
+                if (grid[i][j] == '1') {
+                    ans++;
+                    dfs(grid, i, j);
+
+                }
+            }
+        }
+        return ans;
+    }
+
+    private void dfs(char[][] grid, int i, int j) {
+        int rowLen = grid.length;
+        int cowLen = grid[0].length;
+        if (i < 0 || j < 0 || i >= rowLen || j > cowLen || grid[i][j] == '0') {
+            return;
+        }
+
+
+        grid[i][j] = '0';
+
+        //向四个方向扩散
+        dfs(grid, i - 1, j);
+        dfs(grid, i + 1, j);
+        dfs(grid, i, j - 1);
+        dfs(grid, i, j + 1);
+
+    }
+
+    // 200. 岛屿数量 BFS 时间复杂度：O(MN)，空间复杂度：O(1)
+    public int numIslands2(char[][] grid) {
+        if (grid == null || grid.length == 0) {
+            return 0;
+        }
+
+        int rowLen = grid.length;
+        int colLen = grid[0].length;
+        int num_islands = 0;
+
+        for (int i = 0; i < rowLen; ++i) {
+            for (int j = 0; j < colLen; ++j) {
+                if (grid[i][j] == '1') {
+                    ++num_islands;
+                    grid[i][j] = '0';
+                    Queue<Integer> neighbors = new ArrayDeque<>();
+                    neighbors.add(i * colLen + j);
+                    while (!neighbors.isEmpty()) {
+                        int id = neighbors.remove();
+                        int row = id / colLen;
+                        int col = id % colLen;
+                        if (row - 1 >= 0 && grid[row - 1][col] == '1') {
+                            neighbors.add((row - 1) * colLen + col);
+                            grid[row - 1][col] = '0';
+                        }
+                        if (row + 1 < rowLen && grid[row + 1][col] == '1') {
+                            neighbors.add((row + 1) * colLen + col);
+                            grid[row + 1][col] = '0';
+                        }
+                        if (col - 1 >= 0 && grid[row][col - 1] == '1') {
+                            neighbors.add(row * colLen + col - 1);
+                            grid[row][col - 1] = '0';
+                        }
+                        if (col + 1 < colLen && grid[row][col + 1] == '1') {
+                            neighbors.add(row * colLen + col + 1);
+                            grid[row][col + 1] = '0';
+                        }
+                    }
+                }
+            }
+        }
+
+        return num_islands;
+    }
+
+    // 200. 岛屿数量 并查集 时间复杂度：O(MN)，空间复杂度：O(MN)
+    public int numIslands3(char[][] grid) {
+        int rowLen = grid.length;
+        int colLen = grid[0].length;
+        UnionFind uf = new UnionFind(grid);
+        for (int r = 0; r < rowLen; ++r) {
+            for (int c = 0; c < colLen; ++c) {
+                if (grid[r][c] == '1') {
+                    grid[r][c] = '0';
+                    if (r - 1 >= 0 && grid[r - 1][c] == '1') {
+                        uf.unionElements(r * colLen + c, (r - 1) * colLen + c);
+                    }
+                    if (r + 1 < rowLen && grid[r + 1][c] == '1') {
+                        uf.unionElements(r * colLen + c, (r + 1) * colLen + c);
+                    }
+                    if (c - 1 >= 0 && grid[r][c - 1] == '1') {
+                        uf.unionElements(r * colLen + c, r * colLen + c - 1);
+                    }
+                    if (c + 1 < colLen && grid[r][c + 1] == '1') {
+                        uf.unionElements(r * colLen + c, r * colLen + c + 1);
+                    }
+                }
+            }
+        }
+        return uf.getSize();
+
+    }
+
+    //206. 反转链表
+    public ListNode reverseList(ListNode head) {
+        ListNode cur = head;
+        ListNode last = null;
+        while (cur != null) {
+            ListNode nextNode = cur.next;
+            cur.next = last;
+            last = cur;
+            cur = nextNode;
+        }
+        return last;
+    }
+
+    //207. 课程表
+    public boolean canFinish(int numCourses, int[][] prerequisites) {
+        return false;
+    }
 }
-
-
-
-
-
-
-
-

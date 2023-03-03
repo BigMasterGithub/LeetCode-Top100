@@ -120,7 +120,7 @@ public class Tests {
         ListNode list = Util.createList(8);
         Util.printList(list);
         solution.sortList(list);
-*/
+
 
         LRUCache cache = new LRUCache(2);
         cache.put(1, 1);
@@ -132,6 +132,15 @@ public class Tests {
         cache.get(1);
         cache.get(3);
         cache.get(4);
+
+        int rob = solution.rob(new int[]{9,2,1,8,6,5});
+        System.out.println(rob);
+*/
+        ListNode list1 = Util.createSortedList(5);
+        Util.printList(list1);
+        solution.reverseList(list1);
+        System.out.println("旋转后:"+list1);
+
     }
 
 
