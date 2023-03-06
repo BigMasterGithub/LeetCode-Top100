@@ -1,9 +1,5 @@
 package assist;
 
-/*
- * UnionFind5:使用路径压缩
- * 在UnionFind4中的Find()：添加“ parent[p] = parent[parent[p]];”
- * */
 public class UnionFind implements UF {
     private int[] rank;   // rank[i]粗略地表示以i为根的集合所表示的树的层数（因为路径被压缩了）
     private int[] parent; // parent[i]表示第i个元素所指向的父节点

@@ -1658,6 +1658,399 @@ public class Solution {
 
     //207. 课程表
     public boolean canFinish(int numCourses, int[][] prerequisites) {
+        List<List<Integer>> edges = new ArrayList<>();
+        for (int i = 0; i < numCourses; i++)
+            edges.add(new ArrayList<>());
+        int[] visited = new int[numCourses];
+        for (int[] cp : prerequisites)
+            edges.get(cp[1]).add(cp[0]);
+        for (int i = 0; i < numCourses; i++) {
+            System.out.println(Arrays.toString(edges.get(i).toArray()));
+        }
+        for (int i = 0; i < numCourses; i++)
+            if (dfs(edges, visited, i) == false) return false;
+        return true;
+
+    }
+
+    private boolean dfs(List<List<Integer>> edges, int[] visited, int i) {
+        if (visited[i] == 1) return false; //有环
+        if (visited[i] == -1) return true; //没有换,已被遍历
+        visited[i] = 1; //被访问过
+        for (Integer j : edges.get(i))
+            if (!dfs(edges, visited, j)) return false;
+        visited[i] = -1;
+        return true;
+    }
+
+    // 208 TRIE树
+    class Trie {
+        private Trie[] next;
+        private boolean isEnd;
+
+        public Trie() {
+            next = new Trie[26];
+            isEnd = false;
+        }
+
+        public void insert(String word) {
+            Trie node = this;
+            for (int i = 0; i < word.length(); i++) {
+                char ch = word.charAt(i);
+                int index = ch - 'a';
+                if (node.next[index] == null) {
+                    node.next[index] = new Trie();
+                }
+                node = node.next[index];
+            }
+            node.isEnd = true;
+        }
+
+
+        private boolean searchWith(String prefix) {
+            Trie node = this;
+            for (int i = 0; i < prefix.length(); i++) {
+                char ch = prefix.charAt(i);
+                int index = ch - 'a';
+                if (node.next[index] == null) {
+                    return false;
+                }
+                node = node.next[index];
+            }
+            return true;
+        }
+
+
+    }
+
+    //215. 数组中的第K个最大元素 (优先队列)
+    public int findKthLargest(int[] nums, int k) {
+//       Collections.reverseOrder() 逆序排序比较器
+        Queue<Integer> minQueue = new PriorityQueue<>(k, (v1, v2) -> (v1 - v2));
+
+        for (int num : nums) {
+            if (num < minQueue.peek()) continue;
+            minQueue.add(num);
+
+            if (minQueue.size() > k) {
+                minQueue.poll();
+            }
+        }
+        return minQueue.peek();
+
+
+    }
+
+    //215. 数组中的第K个最大元素 (快排思想) 时间复杂度O(n)
+    public int findKthLargest2(int[] nums, int k) {
+        return quickSelect(nums, 0, nums.length - 1, nums.length - k);
+    }
+
+    public int quickSelect(int[] a, int l, int r, int index) {
+        int q = partition(a, l, r);
+        if (q == index) {
+            return a[q];
+        } else {
+            return q < index ? quickSelect(a, q + 1, r, index) : quickSelect(a, l, q - 1, index);
+        }
+    }
+
+
+    public int partition(int[] nums, int L, int R) {
+        int j = L;
+        int randomIndex = L + new Random().nextInt(R - L + 1);
+        swap(nums, L, randomIndex);
+
+        int pivot = nums[L];
+        for (int i = L + 1; i <= R; i++) {
+            if (nums[i] < pivot) {
+                j++;
+                swap(nums, i, j);
+            }
+
+        }
+        swap(nums, L, j);
+        return j;
+    }
+
+    //221. 最大正方形
+    public int maximalSquare(char[][] matrix) {
+        int ans = 0;
+        if (matrix == null || matrix.length == 0 || matrix[0].length == 0) {
+            return ans;
+        }
+        int rowLen = matrix.length, colLen = matrix[0].length;
+        int[][] dp = new int[rowLen][colLen];
+        for (int i = 0; i < rowLen; i++) {
+            for (int j = 0; j < colLen; j++) {
+                if (matrix[i][j] == '1') {
+                    if (i == 0 || j == 0) {
+                        dp[i][j] = 1;
+                    } else {
+                        dp[i][j] = Math.min(Math.min(dp[i - 1][j], dp[i][j - 1]), dp[i - 1][j - 1]) + 1;
+                    }
+                    ans = Math.max(ans, dp[i][j]);
+                }
+            }
+        }
+        int maxSquare = ans * ans;
+        return maxSquare;
+
+
+    }
+
+    // 226. 翻转二叉树
+    public TreeNode invertTree(TreeNode root) {
+        if (root == null) {
+            return null;
+        }
+        TreeNode left = invertTree(root.left);
+        TreeNode right = invertTree(root.right);
+        root.left = right;
+        root.right = left;
+        return root;
+    }
+
+    //234. 回文链表 时间O(N) ,空间O(1)
+    public boolean isPalindrome(ListNode head) {
+        if (head == null || head.next == null) return true;
+        ListNode slow = head;
+        ListNode fast = head;
+        while (fast != null && fast.next != null) {
+            slow = slow.next;
+            fast = fast.next.next;
+        }
+        //从slow开始反转链表
+        ListNode cur = slow;
+        ListNode pre = null;
+        ListNode next = null;
+        while (cur != null) {
+            next = cur.next;
+            cur.next = pre;
+            pre = cur;
+            cur = next;
+        }
+        slow = head;
+        while (pre != null && slow != null) {
+            if (pre.val != slow.val) return false;
+            pre = pre.next;
+            slow = slow.next;
+        }
+        return true;
+
+
+    }
+
+    //236. 二叉树的最近公共祖先
+    public TreeNode lowestCommonAncestor(TreeNode root, TreeNode p, TreeNode q) {
+        if (root == null || root == p || root == q) return root;
+        TreeNode left = lowestCommonAncestor(root.left, p, q);
+        TreeNode right = lowestCommonAncestor(root.right, p, q);
+        if (left == null) return right;
+        if (right == null) return left;
+        return root;
+
+    }
+
+    // 162.寻找局部最大值
+    public int findPeakElement(int[] nums) {
+        if (nums == null || nums.length == 0)
+            return -1;
+        int len = nums.length;
+        if (len == 1 || nums[0] > nums[1])
+            return 0;
+        if (nums[len - 1] > nums[len - 2])
+            return len - 1;
+        int L = 1;
+        int R = len - 2;
+        int mid = 0;
+        while (L < R) {
+            mid = (L + R) / 2;
+            if (nums[mid] < nums[mid - 1])
+                R = mid - 1;
+            else if (nums[mid] < nums[mid + 1])
+                L = mid + 1;
+            else return mid;
+        }
+        return L;
+    }
+
+    // 剑指 Offer 18. 删除链表的节点 (可以删除所有值=val的节点)
+    public ListNode deleteNode(ListNode head, int val) {
+        while (head != null) {
+            if (head.val != val) break;
+            head = head.next;
+        }
+
+        ListNode pre = head;
+        ListNode cur = head;
+        while (cur != null) {
+            if (cur.val == val) {
+                pre.next = cur.next;
+
+            } else {
+                pre = cur;
+            }
+            cur = cur.next;
+        }
+        return head;
+
+    }
+
+    //225. 用两个队列实现栈
+    class MyStack {
+        Queue<Integer> q1;
+        Queue<Integer> q2;
+
+        public MyStack() {
+            q1 = new LinkedList<>();
+            q2 = new LinkedList<>();
+        }
+
+        public void push(int x) {
+            q2.add(x);
+            while (!q1.isEmpty()) {
+                q2.add(q1.poll());
+            }
+            Queue<Integer> temp = q1;
+            q1 = q2;
+            q2 = temp;
+        }
+
+        public int pop() {
+            return q1.poll();
+        }
+
+        public int top() {
+            return q1.peek();
+        }
+
+        public boolean empty() {
+            return q1.isEmpty();
+        }
+    }
+
+    //225. 用一个队列实现栈
+    class MyStack2 {
+        Queue<Integer> queue;
+
+        /**
+         * Initialize your data structure here.
+         */
+        public MyStack2() {
+            queue = new LinkedList<Integer>();
+        }
+
+        /**
+         * Push element x onto stack.
+         */
+        public void push(int x) {
+            int n = queue.size();
+            queue.offer(x);
+            for (int i = 0; i < n; i++) {
+                queue.offer(queue.poll());
+            }
+        }
+
+        /**
+         * Removes the element on top of the stack and returns that element.
+         */
+        public int pop() {
+            return queue.poll();
+        }
+
+        /**
+         * Get the top element.
+         */
+        public int top() {
+            return queue.peek();
+        }
+
+        /**
+         * Returns whether the stack is empty.
+         */
+        public boolean empty() {
+            return queue.isEmpty();
+        }
+    }
+
+    // 239. 滑动窗口最大值
+    public int[] maxSlidingWindow(int[] nums, int k) {
+        if (nums == null || nums.length < 2) return nums;
+
+        LinkedList<Integer> q = new LinkedList<>();
+        int len = nums.length;
+        int[] ans = new int[nums.length - k + 1];
+
+        for (int i = 0; i < len; i++) {
+            while (!q.isEmpty() && nums[q.peekLast()] <= nums[i]) {
+                q.pollLast();
+
+            }
+            q.addLast(i);
+            if (q.peek() < i - k + 1) {
+                q.poll();
+            }
+            if (i + 1 >= k) {
+                ans[i + 1 - k] = nums[q.peek()];
+            }
+        }
+        return ans;
+    }
+
+    // 剑指 Offer 09. 用两个栈实现队列
+    class CQueue {
+
+        Stack<Integer> stack_primary, stack2;
+
+        public CQueue() {
+            stack_primary = new Stack();
+            stack2 = new Stack();
+        }
+
+        public void appendTail(int value) {
+            stack_primary.add(value);
+        }
+
+        public int deleteHead() {
+            if (stack2.isEmpty()) {
+                while (!stack_primary.isEmpty())
+                    stack2.push(stack_primary.pop());
+            }
+
+            if (stack2.isEmpty())
+                return -1;
+            else
+                return stack2.pop();
+        }
+    }
+
+    // 240. 搜索二维矩阵 II
+    public boolean searchMatrix(int[][] matrix, int target) {
+        int rowlen = matrix.length;
+        int collen = matrix[0].length;
+        int i = 0;
+        int j = collen - 1;
+        while (i < rowlen && j >= 0) {
+            if (target < matrix[i][j]) {
+                j--;
+            } else if (target > matrix[i][j]) {
+                i++;
+            } else return true;
+        }
         return false;
+    }
+
+    // 279. 完全平方数
+    public int numSquares(int n) {
+        int[] dp = new int[n+1];
+        for(int i = 1 ; i <= n ;i++){
+            dp[i] = i;
+            for(int j = 1 ; j*j<=i ;j++){
+                dp[i]=Math.min(dp[i-j*j]+1,dp[i]);
+            }
+
+        }
+        return dp[n];
     }
 }

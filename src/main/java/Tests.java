@@ -1,9 +1,13 @@
 import assist.ListNode;
+import cn.hutool.core.text.csv.CsvUtil;
+import sort.QuickSort;
 import utils.Util;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Queue;
 
 /**
  * @author 张壮
@@ -135,11 +139,30 @@ public class Tests {
 
         int rob = solution.rob(new int[]{9,2,1,8,6,5});
         System.out.println(rob);
-*/
+
         ListNode list1 = Util.createSortedList(5);
         Util.printList(list1);
         solution.reverseList(list1);
         System.out.println("旋转后:"+list1);
+
+
+        boolean b = solution.canFinish(3, new int[][]{{0, 2}, {1, 2}, {1, 0}});
+
+
+
+        int[] nums = new int[]{100, 3, 41, 123, 4, 56, 8, 36, 1};
+        System.out.println(Arrays.toString(nums));
+        QuickSort q = new QuickSort();
+        q.quickSort(nums, 0, 8);
+        System.out.println(Arrays.toString(nums));
+
+
+        int peakElement = solution.findPeakElement(new int[]{1, 3, 2, 1});
+        System.out.println(peakElement);
+
+
+        */
+     solution.maxSlidingWindow(new int[]{1,3,-1,-3,5,3,6,7},3);
 
     }
 
