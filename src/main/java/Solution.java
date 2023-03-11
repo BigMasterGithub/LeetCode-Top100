@@ -1,6 +1,7 @@
 import assist.ListNode;
 import assist.TreeNode;
 import assist.UnionFind;
+import cn.hutool.core.lang.hash.Hash;
 import cn.hutool.core.lang.tree.Tree;
 import cn.hutool.core.util.NumberUtil;
 import utils.Util;
@@ -1246,7 +1247,7 @@ public class Solution {
                 fast = head;
                 while (fast != slow) {
                     slow = slow.next;
-                    fast = fast.next.next;
+                    fast = fast.next;
                 }
                 return fast;
             }
@@ -2043,14 +2044,216 @@ public class Solution {
 
     // 279. 完全平方数
     public int numSquares(int n) {
-        int[] dp = new int[n+1];
-        for(int i = 1 ; i <= n ;i++){
+        int[] dp = new int[n + 1];
+        for (int i = 1; i <= n; i++) {
             dp[i] = i;
-            for(int j = 1 ; j*j<=i ;j++){
-                dp[i]=Math.min(dp[i-j*j]+1,dp[i]);
+            for (int j = 1; j * j <= i; j++) {
+                dp[i] = Math.min(dp[i - j * j] + 1, dp[i]);
             }
 
         }
         return dp[n];
+    }
+
+    //283. 移动零
+    public void moveZeroes(int[] nums) {
+        int len = nums.length;
+        int j = 0;
+//        [0,j]都是不等于0的
+        for (int i = 0; i < len; i++) {
+            if (nums[i] != 0) {
+                int temp = nums[i];
+                nums[i] = nums[j];
+                nums[j] = temp;
+                j++;
+            }
+
+        }
+    }
+
+    //287. 寻找重复数
+    public int findDuplicate(int[] nums) {
+        int slow = 0;
+        int fast = 0;
+        do {
+            slow = nums[0];
+            fast = nums[nums[fast]];
+        } while (slow != fast);
+        slow = 0;
+        while (slow != fast) {
+            slow = nums[slow];
+            fast = nums[fast];
+        }
+        return slow;
+    }
+
+
+    // 662. 二叉树最大宽度 (广度优先遍历)
+    public int widthOfBinaryTree(TreeNode root) {
+        if (root == null) return 0;
+        int ans = 0;
+        Queue<TreeNode> queue = new LinkedList<>();
+        queue.add(new TreeNode(1, root.left, root.right));
+
+
+        while (!queue.isEmpty()) {
+            int size = queue.size(), startIndex = -1, endIndex = -1;
+            for (int i = 0; i < size; i++) {
+                TreeNode node = queue.poll();
+                endIndex = node.val;
+                if (startIndex == -1)
+                    startIndex = node.val;
+
+                if (node.left != null) {
+                    TreeNode leftChildrenNode = node.left;
+                    queue.add(new TreeNode(node.val * 2, leftChildrenNode.left, leftChildrenNode.right));
+                }
+                if (node.right != null) {
+                    TreeNode rightChildrenNode = node.right;
+                    queue.add(new TreeNode(node.val * 2, rightChildrenNode.left, rightChildrenNode.right));
+                }
+                ans = Math.max(ans, endIndex - startIndex + 1);
+            }
+        }
+        return ans;
+    }
+
+    // 662. 二叉树最大宽度 (深度度优先遍历)
+    int ans = 0;
+    Map<Integer, Integer> minValue = new HashMap<>();
+
+    public int widthOfBinaryTree2(TreeNode root) {
+        dfs(root, 1, 0);
+        return ans;
+    }
+
+    private void dfs(TreeNode node, int nodeIndex, int level) {
+        if (node == null) return;
+        minValue.putIfAbsent(level, nodeIndex);
+        ans = Math.max(ans, nodeIndex - minValue.get(level) + 1);
+
+        dfs(node.left, nodeIndex << 1, level + 1);
+        dfs(node.right, nodeIndex << 1 | 1, level + 1);
+    }
+
+    //297. 二叉树的序列化与反序列化
+    class Codec {
+
+        // Encodes a tree to a single string.
+        public String serialize(TreeNode root) {
+            return rSerialize(root);
+
+        }
+
+        private String rSerialize(TreeNode node) {
+            if (node == null) {
+                return "null,";
+            }
+            String str = node.val + ",";
+            str += rSerialize(node.left);
+            str += rSerialize(node.right);
+
+            return str;
+        }
+
+        // Decodes your encoded data to tree.
+        public TreeNode deserialize(String data) {
+            String[] value = data.split(",");
+            Queue<String> queue = new LinkedList<>(Arrays.asList(value));
+            return reconPreOrder(queue);
+
+        }
+
+        private TreeNode reconPreOrder(Queue<String> q) {
+            if (q.isEmpty()) return null;
+            String value = q.poll();
+            if (value.equals("null")) {
+                return null;
+            }
+            TreeNode head = new TreeNode(Integer.valueOf(value));
+            head.left = reconPreOrder(q);
+            head.right = reconPreOrder(q);
+            return head;
+        }
+    }
+
+    //    300. 最长递增子序列  动态规划时间复杂度O(N^2)
+    public int lengthOfLIS(int[] nums) {
+        int[] dp = new int[nums.length];
+        Arrays.fill(dp, 1);
+        int ans = 1;
+        for (int i = 1; i < nums.length; i++) {
+            for (int j = 0; j < i; j++) {
+                if (nums[i] > nums[j])
+                    dp[i] = Math.max(dp[i], dp[j] + 1);
+            }
+            ans = Math.max(ans, dp[i]);
+
+
+        }
+        return ans;
+    }
+
+    //    300. 最长递增子序列  二分查找+动态规划   时间复杂度O(NlgN)
+    public int lengthOfLIS2(int[] nums) {
+        int[] tails = new int[nums.length]; //表示长度为i+1的子序列尾部最小值,例如tails[199] = 299,当严格递增序列长度为199时,尾部最小值为299
+        int res = 0;
+        for (int cur : nums) {
+            int i = 0, j = res;
+            //确定当前数 的位置,如果它比tail[res-1]还大,那么就更新tail[res-1]的值
+            while (i < j) {
+                int m = (i + j) / 2;
+                if (tails[m] < cur) i = m + 1;
+                else j = m;
+            }
+            tails[i] = cur;
+            if (res == i) res++;
+        }
+        return res;
+    }
+
+    // 301. 删除无效的括号
+    List<String> res = new ArrayList<>();
+
+    public List<String> removeInvalidParentheses(String s) {
+        int Lremove = 0;
+        int Rremove = 0;
+        for (int i = 0; i < s.length(); i++) {
+            if (s.charAt(i) == '(') {
+                Lremove++;
+            } else if (s.charAt(i) == ')') {
+                if(Lremove == 0)
+                Rremove++;
+                else  Lremove--;
+            }
+        }
+        helper(s, 0, Lremove, Rremove);
+        return res;
+
+
+    }
+
+    private void helper(String str, int start, int Lremove, int Rremove) {
+        if (Lremove == 0 && Rremove == 0) {
+            if (isValid(str)) {
+                res.add(str);
+            }
+            return;
+        }
+        for(int i  =start ; i<str.length();i++){
+            if(i!=start && str.charAt(i) ==str.charAt(i-1)){
+                continue;
+            }
+            if(Lremove+Rremove > str.length()-i){
+                return ;
+            }
+            if(Lremove > 0 && str.charAt(i)=='('){
+                helper(str.substring(0,i)+str.substring(i+1),i,Lremove-1,Rremove);
+            }
+            if(Rremove > 0 && str.charAt(i)==')'){
+                helper(str.substring(0,i)+str.substring(i+1),i,Lremove,Rremove-1);
+            }
+
+        }
     }
 }

@@ -1,4 +1,5 @@
 import assist.ListNode;
+import assist.TreeNode;
 import cn.hutool.core.text.csv.CsvUtil;
 import sort.QuickSort;
 import utils.Util;
@@ -161,8 +162,30 @@ public class Tests {
         System.out.println(peakElement);
 
 
+
+        solution.maxSlidingWindow(new int[]{1, 3, -1, -3, 5, 3, 6, 7}, 3);
+
+
+
+        solution.moveZeroes(new int[]{1,0,0,8,6});
+
         */
-     solution.maxSlidingWindow(new int[]{1,3,-1,-3,5,3,6,7},3);
+        TreeNode root = new TreeNode(1);
+        TreeNode node2 = new TreeNode(2);
+        TreeNode node3 = new TreeNode(3);
+        TreeNode node4= new TreeNode(4);
+        TreeNode node5= new TreeNode(5);
+        TreeNode node6= new TreeNode(6);
+
+        root.left =node2;
+        root.right =node3;
+
+
+        node3.left=node4;
+        node3.right=node5;
+
+
+
 
     }
 
